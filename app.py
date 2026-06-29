@@ -118,6 +118,6 @@ if st.session_state["ide_path"] is not None:
         st.download_button(
             "Download CSV (Accel + Vel + Disp)",
             csv,
-            file_name=f"{file_name}_processed.csv",
+            file_name=f"{file_name}_{axis}_{start_time}-{end_time}s.csv,
             mime="text/csv"
         )
