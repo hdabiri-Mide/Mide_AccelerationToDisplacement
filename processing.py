@@ -1,23 +1,23 @@
-# import os
-# import tempfile
+import os
+import tempfile
 
-# import endaq
-# import plotly.express as px
+import endaq
+import plotly.express as px
 
-# from plotting import create_result_plot
+from plotting import create_result_plot
 
 
-# ############################################################
-# # USER CONSTANTS
-# ############################################################
+############################################################
+# USER CONSTANTS
+############################################################
 
-# ACCEL_40G = 80
+ACCEL_40G = 80
 
-# X = 0
-# Y = 1
-# Z = 2
+X = 0
+Y = 1
+Z = 2
 
-# G_TO_M2S = 9.81
+G_TO_M2S = 9.81
 
 
 ############################################################
