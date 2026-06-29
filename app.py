@@ -3,6 +3,7 @@ import streamlit as st
 import tempfile
 import plotly.express as px
 import base64
+import os
 
 from processing import preview_signal, process_signal, create_result_plot
 
@@ -21,21 +22,25 @@ def get_base64_image(image_path):
         return base64.b64encode(img_file.read()).decode()
 
 
-logo_base64 = get_base64_image("enDAQLOGO.JPG")  # put your jpg in project folder
+BASE_DIR = os.path.dirname(__file__)
+logo_path = os.path.join(BASE_DIR, "enDAQLOGO.JPG")
+
+logo_base64 = get_base64_image(logo_path)
+
 
 st.markdown(
     f"""
-    <style>
-        .top-right-logo {{
-            position: fixed;
-            top: 15px;
-            right: 20px;
-            z-index: 999;
-        }}
-    </style>
+    <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    ">
+        <h1 style="margin: 0;">IDE Signal Converter</h1>
 
-    <div class="top-right-logo">
-        <img src="data:image/jpg;base64,{logo_base64}" width="120">
+        <img src="data:image/jpg;base64,{logo_base64}"
+             width="120"
+             style="margin-right: 10px;">
     </div>
     """,
     unsafe_allow_html=True
