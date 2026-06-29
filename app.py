@@ -93,15 +93,66 @@ if st.session_state["ide_path"] is not None:
         end_time = st.number_input("End Time (s)", value=10.0)
 
     # --------------------------------------------------------
+    # ADVANCED INTEGRATION SETTINGS
+    # --------------------------------------------------------
+    with st.expander("Advanced Integration Settings"):
+    
+        st.markdown(
+            """
+            These parameters control the numerical integration used to convert
+            acceleration into velocity and displacement. The default values are
+            suitable for most vibration measurements.
+            """
+        )
+    
+        col1, col2 = st.columns(2)
+    
+        with col1:
+            highpass_cutoff = st.number_input(
+                "High-pass Cutoff Frequency (Hz)",
+                min_value=0.0,
+                value=1.0,
+                step=0.1,
+                help=(
+                    "Removes DC offset and very low-frequency drift before "
+                    "integration. Increasing this value reduces drift but "
+                    "may also remove genuine low-frequency motion."
+                ),
+            )
+    
+        with col2:
+            tukey_percent = st.number_input(
+                "Tukey Window Percentage",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.05,
+                step=0.01,
+                format="%.2f",
+                help=(
+                    "Applies a Tukey window to taper the beginning and end of "
+                    "the signal, reducing edge effects during integration. "
+                    "Typical values range from 0.02 to 0.10."
+                ),
+            )
+
+    # --------------------------------------------------------
     # PROCESS
     # --------------------------------------------------------
     if st.button("Process Signal"):
 
+        # df = process_signal(
+        #     ide_path,
+        #     axis,
+        #     start_time,
+        #     end_time
+        # )
         df = process_signal(
             ide_path,
             axis,
             start_time,
-            end_time
+            end_time,
+            highpass_cutoff,
+            tukey_percent,
         )
 
         st.session_state["df"] = df
