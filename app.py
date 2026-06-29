@@ -19,7 +19,7 @@ st.title("IDE Signal Converter")
 st.write(
     """
 Upload an IDE file, preview acceleration,
-select time range, and visualize acceleration,
+select time range, and visualize and download acceleration,
 velocity, and displacement together.
 """
 )
