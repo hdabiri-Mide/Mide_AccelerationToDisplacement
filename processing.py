@@ -100,25 +100,31 @@ def process_signal(
     # EXTRACT TIME RANGE
     ########################################################
 
-    endaq.ide.extract_time(
+    # endaq.ide.extract_time(
 
-        ide_path,
+    #     ide_path,
 
-        extracted_ide_path,
+    #     extracted_ide_path,
 
-        start=str(start_time),
+    #     start=str(start_time),
 
-        end=str(end_time)
+    #     end=str(end_time)
 
-    )
+    # )
+
+    df_accel = df_accel[
+            (df_accel.index >= start_time) &
+            (df_accel.index <= end_time)
+    ]
 
     ########################################################
     # LOAD ACCELERATION
     ########################################################
 
-    doc = endaq.ide.get_doc(
-        extracted_ide_path
-    )
+    # doc = endaq.ide.get_doc(
+    #     extracted_ide_path
+    # )
+    doc = endaq.ide.get_doc(ide_path)
 
     df_accel = endaq.ide.to_pandas(
 
@@ -127,6 +133,11 @@ def process_signal(
         time_mode="seconds"
 
     ) * G_TO_M2S
+
+    df_accel = df_accel[
+            (df_accel.index >= start_time) &
+            (df_accel.index <= end_time)
+    ]
 
     ########################################################
     # CALCULATE VELOCITY / DISPLACEMENT
