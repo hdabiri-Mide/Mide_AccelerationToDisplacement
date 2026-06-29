@@ -1,6 +1,6 @@
-########################################################## TEST
 import streamlit as st
 import tempfile
+import os 
 
 from processing import preview_signal, process_signal, create_result_plot
 
@@ -111,9 +111,13 @@ if st.session_state["ide_path"] is not None:
         # ----------------------------------------------------
         csv = df.to_csv(index=True).encode("utf-8")
 
+        file_name = os.path.splitext(
+            os.path.basename(st.session_state["ide_path"])
+        )[0]
+
         st.download_button(
             "Download CSV (Accel + Vel + Disp)",
             csv,
-            file_name="processed_signal.csv",
+            file_name=f"{file_name}_processed.csv",
             mime="text/csv"
         )
