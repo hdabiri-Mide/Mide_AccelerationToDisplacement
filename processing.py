@@ -76,7 +76,7 @@ def process_signal(
     # unit conversion
     df_accel = df_accel * G_TO_M2S
     df_accel = df_accel.copy()
-    df_accel.columns = ["acceleration"]
+    df_accel.columns = ["acceleration (mm/s²)"]
 
     # time filter
     df_accel = df_accel.loc[
@@ -104,8 +104,8 @@ def process_signal(
     df_velocity = integrals[1].copy()
     df_displacement = integrals[2].copy()
 
-    df_velocity.columns = ["velocity"]
-    df_displacement.columns = ["displacement"]
+    df_velocity.columns = ["velocity (mm/s)"]
+    df_displacement.columns = ["displacement (mm)"]
 
     # scaling
     df_velocity *= 1e3
@@ -142,7 +142,7 @@ def create_result_plot(df):
         height=800,
         hovermode="x unified",
         showlegend=False,
-        title="Acceleration / Velocity / Displacement"
+        # title="Acceleration / Velocity / Displacement"
     )
 
     fig.update_xaxes(title_text="Time [s]", row=3, col=1)
