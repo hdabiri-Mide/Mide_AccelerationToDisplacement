@@ -195,7 +195,14 @@ if st.session_state["ide_path"] is not None:
         file_base = st.session_state["ide_filename"]
         file_base = file_base.replace(".ide", "").replace(".IDE", "")
 
-        csv = df.to_csv(index=True).encode("utf-8")
+        export_df = df.copy()
+        export_df.columns = [
+            "acceleration (m/s²)",
+            "velocity (mm/s)",
+            "displacement (mm)"
+        ]
+
+        csv = export_df.to_csv(index=True).encode("utf-8")
 
         st.download_button(
             label="Download CSV (Acceleration + Velocity + Displacement)",
