@@ -370,7 +370,6 @@
 import endaq
 import numpy as np
 import streamlit as st
-
 import plotly.express as px
 
 
@@ -418,19 +417,13 @@ def preview_signal(ide_path, axis):
 
 
 # ============================================================
-# PROCESS SIGNAL (PURE FUNCTION - NO UI, NO STATE)
+# PROCESS SIGNAL (PURE DATA FUNCTION)
 # ============================================================
 @st.cache_data(show_spinner=False)
 def process_signal(ide_path, axis, start_time, end_time):
 
     axis_number = axis_dict[axis]
 
-    start_time = float(start_time)
-    end_time = float(end_time)
-
-    # --------------------------------------------------------
-    # LOAD DATA
-    # --------------------------------------------------------
     doc = endaq.ide.get_doc(ide_path)
 
     df_accel = endaq.ide.to_pandas(
@@ -439,29 +432,23 @@ def process_signal(ide_path, axis, start_time, end_time):
     )
 
     if df_accel is None or len(df_accel) == 0:
-        raise ValueError("No acceleration data found in IDE file.")
+        raise ValueError("No acceleration data found.")
 
-    # --------------------------------------------------------
-    # UNIT CONVERSION
-    # --------------------------------------------------------
+    # unit conversion
     df_accel = df_accel * G_TO_M2S
     df_accel = df_accel.copy()
     df_accel.columns = ["acceleration"]
 
-    # --------------------------------------------------------
-    # TIME FILTER
-    # --------------------------------------------------------
+    # time filter
     df_accel = df_accel.loc[
-        (df_accel.index >= start_time) &
-        (df_accel.index <= end_time)
+        (df_accel.index >= float(start_time)) &
+        (df_accel.index <= float(end_time))
     ]
 
     if len(df_accel) == 0:
-        raise ValueError("No data in selected time window.")
+        raise ValueError("No data in selected time range.")
 
-    # --------------------------------------------------------
-    # INTEGRATION (acc → vel → disp)
-    # --------------------------------------------------------
+    # integration
     integrals = endaq.calc.integrate.integrals(
         df_accel,
         n=2,
@@ -475,16 +462,48 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_velocity.columns = ["velocity"]
     df_displacement.columns = ["displacement"]
 
-    # --------------------------------------------------------
-    # UNIT SCALING (mm, mm/s etc.)
-    # --------------------------------------------------------
+    # scale
     df_velocity *= 1e3
     df_displacement *= 1e3
 
-    # --------------------------------------------------------
-    # MERGE ALL SIGNALS
-    # --------------------------------------------------------
-    df = df_accel.join(df_velocity, how="left")
-    df = df.join(df_displacement, how="left")
+    df = df_accel.join(df_velocity)
+    df = df.join(df_displacement)
 
     return df
+
+
+# ============================================================
+# UI FUNCTION (FORCE 3 PLOTS)
+# ============================================================
+def show_results(df):
+
+    st.subheader("Acceleration / Velocity / Displacement")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("### Acceleration")
+        fig1 = px.line(
+            x=df.index,
+            y=df["acceleration"],
+            labels={"x": "Time [s]", "y": "Acceleration"},
+        )
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with col2:
+        st.markdown("### Velocity")
+        fig2 = px.line(
+            x=df.index,
+            y=df["velocity"],
+            labels={"x": "Time [s]", "y": "Velocity"},
+        )
+        st.plotly_chart(fig2, use_container_width=True)
+
+    with col3:
+        st.markdown("### Displacement")
+        fig3 = px.line(
+            x=df.index,
+            y=df["displacement"],
+            labels={"x": "Time [s]", "y": "Displacement"},
+        )
+        st.plotly_chart(fig3, use_container_width=True)
