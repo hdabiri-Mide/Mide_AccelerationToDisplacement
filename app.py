@@ -198,7 +198,7 @@ if st.session_state["ide_path"] is not None:
         csv = df.to_csv(index=True).encode("utf-8")
 
         st.download_button(
-            label="Download CSV (Accel + Vel + Disp)",
+            label="Download CSV (Acceleration + Velocity + Displacement)",
             data=csv,
             file_name=f"{file_base}_Z_{start_time}-{end_time}s_processed.csv",
             mime="text/csv"
