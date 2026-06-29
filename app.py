@@ -203,3 +203,12 @@ if st.session_state["ide_path"] is not None:
             file_name=f"{file_base}_Z_{start_time}-{end_time}s_processed.csv",
             mime="text/csv"
         )
+        
+        st.info("""
+        Units:
+        - Acceleration: m/s²  
+        - Velocity: mm/s  
+        - Displacement: mm
+        """)
+
+
