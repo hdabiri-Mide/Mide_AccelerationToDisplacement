@@ -94,12 +94,12 @@ def process_signal(
     #     highpass_cutoff=1.0,
     #     tukey_percent=0.05
     # )
-  integrals = endaq.calc.integrate.integrals(
-      df_accel,
-      n=2,
-      highpass_cutoff=highpass_cutoff,
-      tukey_percent=tukey_percent,
-  )
+    integrals = endaq.calc.integrate.integrals(
+        df_accel,
+        n=2,
+        highpass_cutoff=highpass_cutoff,
+        tukey_percent=tukey_percent,
+    )
 
     df_velocity = integrals[1].copy()
     df_displacement = integrals[2].copy()
