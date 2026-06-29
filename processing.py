@@ -315,17 +315,45 @@ def run_processing_ui():
         else:
             y = df["displacement"]
 
-        fig = px.line(
-            y,
-            x=y.index,
-            y=y.values,
-            labels={"x": "Time [s]", "y": view},
-            title=f"{view} Signal"
+        # fig = px.line(
+        #     y,
+        #     x=y.index,
+        #     y=y.values,
+        #     labels={"x": "Time [s]", "y": view},
+        #     title=f"{view} Signal"
+        # )
+
+        # fig.update_layout(hovermode="x unified")
+
+        # st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("Acceleration / Velocity / Displacement")
+
+        fig_acc = px.line(
+            x=df.index,
+            y=df["acceleration"],
+            labels={"x": "Time [s]", "y": "Acceleration"},
+            title="Acceleration"
         )
+        
+        fig_vel = px.line(
+            x=df.index,
+            y=df["velocity"],
+            labels={"x": "Time [s]", "y": "Velocity"},
+            title="Velocity"
+        )
+        
+        fig_disp = px.line(
+            x=df.index,
+            y=df["displacement"],
+            labels={"x": "Time [s]", "y": "Displacement"},
+            title="Displacement"
+        )
+        
+        st.plotly_chart(fig_acc, use_container_width=True)
+        st.plotly_chart(fig_vel, use_container_width=True)
+        st.plotly_chart(fig_disp, use_container_width=True)
 
-        fig.update_layout(hovermode="x unified")
-
-        st.plotly_chart(fig, use_container_width=True)
 
         # ----------------------------------------------------
         # DOWNLOAD BUTTON (STABLE)
