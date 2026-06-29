@@ -21,7 +21,7 @@ def get_base64_image(image_path):
         return base64.b64encode(img_file.read()).decode()
 
 
-logo_base64 = get_base64_image("enDAQLOGO.jpg")  # put your jpg in project folder
+logo_base64 = get_base64_image("enDAQLOGO.JPG")  # put your jpg in project folder
 
 st.markdown(
     f"""
