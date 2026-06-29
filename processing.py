@@ -402,8 +402,10 @@ def process_signal(ide_path, axis, start_time, end_time):
     endaq.ide.extract_time(
         ide_path,
         extracted_ide_path,
-        start=str(start_time),
-        end=str(end_time)
+        # start=str(start_time),
+        # end=str(end_time)
+        start=start_time,
+        end=end_time
     )
 
     # ============================================================
