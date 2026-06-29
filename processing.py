@@ -76,7 +76,7 @@ def process_signal(
     # unit conversion
     df_accel = df_accel * G_TO_M2S
     df_accel = df_accel.copy()
-    df_accel.columns = ["acceleration (mm/s²)"]
+    df_accel.columns = ["acceleration"]
 
     # time filter
     df_accel = df_accel.loc[
@@ -104,8 +104,8 @@ def process_signal(
     df_velocity = integrals[1].copy()
     df_displacement = integrals[2].copy()
 
-    df_velocity.columns = ["velocity (mm/s)"]
-    df_displacement.columns = ["displacement (mm)"]
+    df_velocity.columns = ["velocity"]
+    df_displacement.columns = ["displacement"]
 
     # scaling
     df_velocity *= 1e3
