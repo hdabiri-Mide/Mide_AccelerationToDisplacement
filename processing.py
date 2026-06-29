@@ -310,15 +310,182 @@
 #     fig = create_result_plot(df)
 
 #     return df, fig
-########################################################################
+######################################################################## FInal (works)
 
+# import os
+# import tempfile
+# import endaq
+# import numpy as np
+# import plotly.express as px
+
+# from plotting import create_result_plot
+
+# # ============================================================
+# # CONSTANTS
+# # ============================================================
+# ACCEL_40G = 80
+# G_TO_M2S = 9.81
+
+# axis_dict = {"X": 0, "Y": 1, "Z": 2}
+
+
+# # ============================================================
+# # PREVIEW FUNCTION
+# # ============================================================
+# def preview_signal(ide_path, axis):
+
+#     axis_number = axis_dict[axis]
+
+#     doc = endaq.ide.get_doc(ide_path)
+
+#     df = endaq.ide.to_pandas(
+#         doc.channels[ACCEL_40G].subchannels[axis_number],
+#         time_mode="seconds",
+#     ) * G_TO_M2S
+
+#     df = df.copy()
+#     df.columns = ["acceleration"]
+
+#     fig = px.line(
+#         df,
+#         x=df.index,
+#         y="acceleration",
+#         labels={
+#             "index": "Time [s]",
+#             "acceleration": "Acceleration [m/s²]"
+#         },
+#         title="Raw Acceleration Signal"
+#     )
+
+#     fig.update_layout(hovermode="x unified")
+
+#     return fig
+
+# # ============================================================
+# # MAIN PROCESS FUNCTION
+# # ============================================================
+
+# def process_signal(ide_path, axis, start_time, end_time):
+
+#     """
+#     Full pipeline:
+#     IDE → extract time window → load → acceleration →
+#     integration → velocity/displacement → plot
+#     """
+
+#     # -----------------------------
+#     # CONSTANTS
+#     # -----------------------------
+#     ACCEL_40G = 80
+#     G_TO_M2S = 9.81
+
+#     axis_dict = {"X": 0, "Y": 1, "Z": 2}
+
+#     if axis not in axis_dict:
+#         raise ValueError("Axis must be X, Y, or Z")
+
+#     axis_number = axis_dict[axis]
+
+#     # ============================================================
+#     # CREATE TEMP EXTRACTED FILE (Streamlit-safe)
+#     # ============================================================
+#     temp_dir = tempfile.gettempdir()
+
+#     extracted_ide_path = os.path.join(
+#         temp_dir,
+#         f"extracted_{os.path.basename(ide_path)}"
+#     )
+
+#     # ============================================================
+#     # EXTRACT TIME WINDOW (CRITICAL FIX)
+#     # ============================================================
+#     # endaq.ide.extract_time(
+#     #     ide_path,
+#     #     extracted_ide_path,
+#     #     # start=str(start_time),
+#     #     # end=str(end_time)
+#     #     start=start_time,
+#     #     end=end_time
+#     # )
+#     start_time = float(start_time)
+#     end_time = float(end_time)
+
+#     endaq.ide.extract_time(
+#         ide_path,
+#         extracted_ide_path,
+#         start=start_time,
+#         end=end_time
+#     )
+
+#     # ============================================================
+#     # LOAD EXTRACTED IDE FILE
+#     # ============================================================
+#     doc = endaq.ide.get_doc(extracted_ide_path)
+
+#     df_accel = endaq.ide.to_pandas(
+#         doc.channels[ACCEL_40G].subchannels[axis_number],
+#         time_mode="seconds",
+#     )
+
+#     if df_accel is None or len(df_accel) == 0:
+#         raise ValueError("No acceleration data found after extraction.")
+
+#     # convert units
+#     df_accel = df_accel * G_TO_M2S
+
+#     df_accel = df_accel.copy()
+#     df_accel.columns = ["acceleration"]
+
+#     # ============================================================
+#     # NORMALIZE TIME (SAFE NOW)
+#     # ============================================================
+#     df_accel.index = df_accel.index - df_accel.index.min()
+
+#     # ============================================================
+#     # INTEGRATION (VELOCITY + DISPLACEMENT)
+#     # ============================================================
+#     integrals = endaq.calc.integrate.integrals(
+#         df_accel,
+#         n=2,
+#         highpass_cutoff=1.0,
+#         tukey_percent=0.05
+#     )
+
+#     df_velocity = integrals[1].copy()
+#     df_displacement = integrals[2].copy()
+
+#     df_velocity.columns = ["velocity"]
+#     df_displacement.columns = ["displacement"]
+
+#     # ============================================================
+#     # UNIT CONVERSION
+#     # ============================================================
+#     df_velocity *= 1e3       # m/s → mm/s
+#     df_displacement *= 1e3   # m → mm
+
+#     # ============================================================
+#     # COMBINE DATA
+#     # ============================================================
+#     df = df_accel.join(df_velocity, how="left")
+#     df = df.join(df_displacement, how="left")
+
+#     # ============================================================
+#     # PLOT
+#     # ============================================================
+#     fig = create_result_plot(df)
+
+#     return df, fig
+
+####################################################################################### TEST
 import os
 import tempfile
 import endaq
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 
 from plotting import create_result_plot
+
 
 # ============================================================
 # CONSTANTS
@@ -330,7 +497,7 @@ axis_dict = {"X": 0, "Y": 1, "Z": 2}
 
 
 # ============================================================
-# PREVIEW FUNCTION
+# PREVIEW FUNCTION (UNCHANGED)
 # ============================================================
 def preview_signal(ide_path, axis):
 
@@ -361,64 +528,42 @@ def preview_signal(ide_path, axis):
 
     return fig
 
-# ============================================================
-# MAIN PROCESS FUNCTION
-# ============================================================
 
+# ============================================================
+# MAIN PROCESS FUNCTION (MATCHES YOUR ORIGINAL SCRIPT)
+# ============================================================
 def process_signal(ide_path, axis, start_time, end_time):
-
-    """
-    Full pipeline:
-    IDE → extract time window → load → acceleration →
-    integration → velocity/displacement → plot
-    """
-
-    # -----------------------------
-    # CONSTANTS
-    # -----------------------------
-    ACCEL_40G = 80
-    G_TO_M2S = 9.81
-
-    axis_dict = {"X": 0, "Y": 1, "Z": 2}
-
-    if axis not in axis_dict:
-        raise ValueError("Axis must be X, Y, or Z")
 
     axis_number = axis_dict[axis]
 
+    # -----------------------------
+    # convert inputs
+    # -----------------------------
+    start_time = float(start_time)
+    end_time = float(end_time)
+
     # ============================================================
-    # CREATE TEMP EXTRACTED FILE (Streamlit-safe)
+    # CREATE EXTRACTED FILE
     # ============================================================
     temp_dir = tempfile.gettempdir()
 
     extracted_ide_path = os.path.join(
         temp_dir,
-        f"extracted_{os.path.basename(ide_path)}"
+        f"{os.path.splitext(os.path.basename(ide_path))[0]}_EXTRACTED.ide"
     )
 
     # ============================================================
-    # EXTRACT TIME WINDOW (CRITICAL FIX)
+    # EXTRACT TIME RANGE (same as your original script)
     # ============================================================
-    # endaq.ide.extract_time(
-    #     ide_path,
-    #     extracted_ide_path,
-    #     # start=str(start_time),
-    #     # end=str(end_time)
-    #     start=start_time,
-    #     end=end_time
-    # )
-    start_time = float(start_time)
-    end_time = float(end_time)
-
     endaq.ide.extract_time(
         ide_path,
         extracted_ide_path,
-        start=start_time,
-        end=end_time
+        start=str(start_time),   # KEEP SAME AS YOUR ORIGINAL
+        end=str(end_time)
     )
 
     # ============================================================
-    # LOAD EXTRACTED IDE FILE
+    # LOAD DATA
     # ============================================================
     doc = endaq.ide.get_doc(extracted_ide_path)
 
@@ -427,22 +572,16 @@ def process_signal(ide_path, axis, start_time, end_time):
         time_mode="seconds",
     )
 
-    if df_accel is None or len(df_accel) == 0:
-        raise ValueError("No acceleration data found after extraction.")
-
-    # convert units
     df_accel = df_accel * G_TO_M2S
 
     df_accel = df_accel.copy()
     df_accel.columns = ["acceleration"]
 
-    # ============================================================
-    # NORMALIZE TIME (SAFE NOW)
-    # ============================================================
-    df_accel.index = df_accel.index - df_accel.index.min()
+    # 🚨 IMPORTANT: DO NOT NORMALIZE TIME
+    # (this is the key difference from your broken Streamlit version)
 
     # ============================================================
-    # INTEGRATION (VELOCITY + DISPLACEMENT)
+    # INTEGRATION (IDENTICAL TO YOUR SCRIPT)
     # ============================================================
     integrals = endaq.calc.integrate.integrals(
         df_accel,
@@ -460,8 +599,8 @@ def process_signal(ide_path, axis, start_time, end_time):
     # ============================================================
     # UNIT CONVERSION
     # ============================================================
-    df_velocity *= 1e3       # m/s → mm/s
-    df_displacement *= 1e3   # m → mm
+    df_velocity *= 1e3
+    df_displacement *= 1e3
 
     # ============================================================
     # COMBINE DATA
@@ -470,7 +609,7 @@ def process_signal(ide_path, axis, start_time, end_time):
     df = df.join(df_displacement, how="left")
 
     # ============================================================
-    # PLOT
+    # PLOT (same structure as your original script)
     # ============================================================
     fig = create_result_plot(df)
 
