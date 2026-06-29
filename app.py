@@ -134,7 +134,7 @@ if st.session_state["ide_path"] is not None:
             highpass_cutoff = st.number_input(
                 "High-pass Cutoff Frequency (Hz)",
                 min_value=0.0,
-                value=1.0,
+                value=2.0,
                 step=0.1,
                 help=(
                     "Removes DC offset and very low-frequency drift before "
