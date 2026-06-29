@@ -302,18 +302,18 @@ def run_processing_ui():
         # ----------------------------------------------------
         # SIGNAL SELECTION (NO RECOMPUTE)
         # ----------------------------------------------------
-        view = st.radio(
-            "Select signal to view",
-            ["Acceleration", "Velocity", "Displacement"],
-            key="signal_view"
-        )
+        # view = st.radio(
+        #     "Select signal to view",
+        #     ["Acceleration", "Velocity", "Displacement"],
+        #     key="signal_view"
+        # )
 
-        if view == "Acceleration":
-            y = df["acceleration"]
-        elif view == "Velocity":
-            y = df["velocity"]
-        else:
-            y = df["displacement"]
+        # if view == "Acceleration":
+        #     y = df["acceleration"]
+        # elif view == "Velocity":
+        #     y = df["velocity"]
+        # else:
+        #     y = df["displacement"]
 
         # fig = px.line(
         #     y,
