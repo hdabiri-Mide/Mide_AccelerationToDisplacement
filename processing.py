@@ -312,7 +312,6 @@
 #     return df, fig
 ########################################################################
 
-
 import os
 import tempfile
 import endaq
