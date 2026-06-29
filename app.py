@@ -15,15 +15,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# Adding logo
-
-
+##### Adding logo
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
 
-logo_base64 = get_base64_image("logo.jpg")  # put your jpg in project folder
+logo_base64 = get_base64_image("enDAQLOGO.jpg")  # put your jpg in project folder
 
 st.markdown(
     f"""
