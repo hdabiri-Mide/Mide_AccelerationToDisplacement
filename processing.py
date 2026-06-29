@@ -20,50 +20,50 @@
 # G_TO_M2S = 9.81
 
 
-# ############################################################
-# # PREVIEW SIGNAL
-# ############################################################
+############################################################
+# PREVIEW SIGNAL
+############################################################
 
-# def preview_signal(
-#         ide_path,
-#         axis
-# ):
+def preview_signal(
+        ide_path,
+        axis
+):
 
-#     axis_dict = {
-#         "X": X,
-#         "Y": Y,
-#         "Z": Z
-#     }
+    axis_dict = {
+        "X": X,
+        "Y": Y,
+        "Z": Z
+    }
 
-#     axis_number = axis_dict[axis]
+    axis_number = axis_dict[axis]
 
-#     ########################################################
+    ########################################################
 
-#     doc_full = endaq.ide.get_doc(ide_path)
+    doc_full = endaq.ide.get_doc(ide_path)
 
-#     df_preview = endaq.ide.to_pandas(
-#         doc_full.channels[ACCEL_40G].subchannels[axis_number],
-#         time_mode="seconds"
-#     ) * G_TO_M2S
+    df_preview = endaq.ide.to_pandas(
+        doc_full.channels[ACCEL_40G].subchannels[axis_number],
+        time_mode="seconds"
+    ) * G_TO_M2S
 
-#     df_preview.columns = ["acceleration"]
+    df_preview.columns = ["acceleration"]
 
-#     fig_preview = px.line(
-#         df_preview,
-#         x=df_preview.index,
-#         y="acceleration",
-#         labels={
-#             "index": "Time [s]",
-#             "acceleration": "Acceleration [m/s²]"
-#         },
-#         title="Raw Acceleration Signal"
-#     )
+    fig_preview = px.line(
+        df_preview,
+        x=df_preview.index,
+        y="acceleration",
+        labels={
+            "index": "Time [s]",
+            "acceleration": "Acceleration [m/s²]"
+        },
+        title="Raw Acceleration Signal"
+    )
 
-#     fig_preview.update_layout(
-#         hovermode="x unified"
-#     )
+    fig_preview.update_layout(
+        hovermode="x unified"
+    )
 
-#     return fig_preview
+    return fig_preview
 
 
 # ############################################################
