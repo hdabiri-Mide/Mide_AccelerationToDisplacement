@@ -2,4 +2,4 @@ streamlit
 plotly
 pandas
 numpy
-endaq
+endaq==1.5.3
