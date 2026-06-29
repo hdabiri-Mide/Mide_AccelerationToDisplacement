@@ -274,13 +274,9 @@
 #     return df, fig
 
 ############################################################################################### test2
-# ============================================================
-# processing.py
-# ============================================================
-
 import endaq
 import numpy as np
-import plotly.express as px
+import pandas as pd
 import streamlit as st
 
 from endaq.calc import integrate
@@ -297,64 +293,20 @@ axis_dict = {"X": 0, "Y": 1, "Z": 2}
 
 
 # ============================================================
-# PREVIEW SIGNAL
+# LOAD + PROCESS CORE PIPELINE
 # ============================================================
-def preview_signal(ide_path, axis):
-    """
-    Quick preview of raw acceleration signal (full length)
-    """
-
-    axis_number = axis_dict[axis]
-
-    doc = endaq.ide.get_doc(ide_path)
-
-    df = endaq.ide.to_pandas(
-        doc.channels[ACCEL_40G].subchannels[axis_number],
-        time_mode="seconds",
-    ) * G_TO_M2S
-
-    df = df.copy()
-    df.columns = ["acceleration"]
-
-    fig = px.line(
-        df,
-        x=df.index,
-        y="acceleration",
-        labels={
-            "index": "Time [s]",
-            "acceleration": "Acceleration [m/s²]",
-        },
-        title="Raw Acceleration Signal",
-    )
-
-    fig.update_layout(hovermode="x unified")
-
-    return fig
-
-
-# ============================================================
-# MAIN PROCESS FUNCTION
-# ============================================================
-@st.cache_data(show_spinner=False)
 def process_signal(ide_path, axis, start_time, end_time):
-    """
-    Full pipeline:
-    acceleration -> velocity -> displacement
-    """
 
     axis_number = axis_dict[axis]
 
-    # --------------------------------------------------------
-    # SAFE CASTING
-    # --------------------------------------------------------
     start_time = float(start_time)
     end_time = float(end_time)
 
     if start_time >= end_time:
-        raise ValueError("start_time must be smaller than end_time")
+        raise ValueError("start_time must be < end_time")
 
     # --------------------------------------------------------
-    # LOAD IDE FILE
+    # LOAD DATA
     # --------------------------------------------------------
     doc = endaq.ide.get_doc(ide_path)
 
@@ -364,17 +316,16 @@ def process_signal(ide_path, axis, start_time, end_time):
     )
 
     if df_accel is None or len(df_accel) == 0:
-        raise ValueError("No acceleration data found in IDE file.")
+        raise ValueError("No acceleration data found.")
 
     # --------------------------------------------------------
-    # UNIT CONVERSION (g -> m/s²)
+    # CONVERT g -> m/s²
     # --------------------------------------------------------
     df_accel = df_accel * G_TO_M2S
-    df_accel = df_accel.copy()
     df_accel.columns = ["acceleration"]
 
     # --------------------------------------------------------
-    # TIME WINDOW FILTER
+    # SLICE TIME WINDOW
     # --------------------------------------------------------
     df_accel = df_accel.loc[
         (df_accel.index >= start_time) &
@@ -382,11 +333,11 @@ def process_signal(ide_path, axis, start_time, end_time):
     ]
 
     if len(df_accel) == 0:
-        raise ValueError("No data in selected time window.")
+        raise ValueError("No data in selected time range.")
 
-    # --------------------------------------------------------
-    # INTEGRATION (endaq standard pipeline)
-    # --------------------------------------------------------
+    # ============================================================
+    # INTEGRATION
+    # ============================================================
     integrals = integrate.integrals(
         df_accel,
         n=2,
@@ -401,20 +352,36 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_displacement.columns = ["displacement"]
 
     # --------------------------------------------------------
-    # UNIT SCALING (mm for readability)
+    # UNIT CONVERSION (engineering-friendly)
     # --------------------------------------------------------
-    df_velocity *= 1e3
-    df_displacement *= 1e3
+    df_velocity *= 1e3        # mm/s
+    df_displacement *= 1e3    # mm
 
-    # --------------------------------------------------------
-    # COMBINE RESULTS
-    # --------------------------------------------------------
+    # ============================================================
+    # COMBINE
+    # ============================================================
     df = df_accel.join(df_velocity, how="left")
     df = df.join(df_displacement, how="left")
 
-    # --------------------------------------------------------
-    # PLOT
-    # --------------------------------------------------------
-    fig = create_result_plot(df)
+    return df
 
-    return df, fig
+
+# ============================================================
+# OPTIONAL: PLOT FUNCTION
+# ============================================================
+def get_plot(df):
+    return create_result_plot(df)
+
+
+# ============================================================
+# EXPORT CSV (IMPORTANT FIX FOR STREAMLIT DOWNLOAD ISSUE)
+# ============================================================
+def to_csv(df):
+    """
+    Ensures timestamp is preserved as a column (NOT index issue-safe)
+    """
+
+    df_export = df.copy()
+    df_export.insert(0, "timestamp", df_export.index)
+
+    return df_export.to_csv(index=False).encode("utf-8")
