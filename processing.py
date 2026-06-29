@@ -370,7 +370,9 @@
 import endaq
 import numpy as np
 import streamlit as st
-import plotly.express as px
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 # ============================================================
@@ -383,7 +385,7 @@ axis_dict = {"X": 0, "Y": 1, "Z": 2}
 
 
 # ============================================================
-# PREVIEW SIGNAL (RAW ACCEL ONLY)
+# PREVIEW SIGNAL
 # ============================================================
 def preview_signal(ide_path, axis):
 
@@ -400,24 +402,21 @@ def preview_signal(ide_path, axis):
     df = df.copy()
     df.columns = ["acceleration"]
 
-    fig = px.line(
-        df,
-        x=df.index,
-        y="acceleration",
-        labels={
-            "index": "Time [s]",
-            "acceleration": "Acceleration [m/s²]"
-        },
-        title="Raw Acceleration Signal"
-    )
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df.index, y=df["acceleration"]))
 
-    fig.update_layout(hovermode="x unified")
+    fig.update_layout(
+        title="Raw Acceleration Signal",
+        xaxis_title="Time [s]",
+        yaxis_title="Acceleration [m/s²]",
+        hovermode="x unified"
+    )
 
     return fig
 
 
 # ============================================================
-# PROCESS SIGNAL (PURE DATA FUNCTION)
+# PROCESS SIGNAL
 # ============================================================
 @st.cache_data(show_spinner=False)
 def process_signal(ide_path, axis, start_time, end_time):
@@ -462,7 +461,7 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_velocity.columns = ["velocity"]
     df_displacement.columns = ["displacement"]
 
-    # scale
+    # scaling
     df_velocity *= 1e3
     df_displacement *= 1e3
 
@@ -473,37 +472,33 @@ def process_signal(ide_path, axis, start_time, end_time):
 
 
 # ============================================================
-# UI FUNCTION (FORCE 3 PLOTS)
+# PLOT: 3 SUBPLOTS (FINAL OUTPUT)
 # ============================================================
-def show_results(df):
+def create_result_plot(df):
 
-    st.subheader("Acceleration / Velocity / Displacement")
+    fig = make_subplots(
+        rows=3,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.05,
+        subplot_titles=[
+            "Acceleration (m/s²)",
+            "Velocity (mm/s)",
+            "Displacement (mm)"
+        ]
+    )
 
-    col1, col2, col3 = st.columns(3)
+    fig.add_trace(go.Scatter(x=df.index, y=df["acceleration"]), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df["velocity"]), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df["displacement"]), row=3, col=1)
 
-    with col1:
-        st.markdown("### Acceleration")
-        fig1 = px.line(
-            x=df.index,
-            y=df["acceleration"],
-            labels={"x": "Time [s]", "y": "Acceleration"},
-        )
-        st.plotly_chart(fig1, use_container_width=True)
+    fig.update_layout(
+        height=800,
+        hovermode="x unified",
+        showlegend=False,
+        title="Acceleration / Velocity / Displacement"
+    )
 
-    with col2:
-        st.markdown("### Velocity")
-        fig2 = px.line(
-            x=df.index,
-            y=df["velocity"],
-            labels={"x": "Time [s]", "y": "Velocity"},
-        )
-        st.plotly_chart(fig2, use_container_width=True)
+    fig.update_xaxes(title_text="Time [s]", row=3, col=1)
 
-    with col3:
-        st.markdown("### Displacement")
-        fig3 = px.line(
-            x=df.index,
-            y=df["displacement"],
-            labels={"x": "Time [s]", "y": "Displacement"},
-        )
-        st.plotly_chart(fig3, use_container_width=True)
+    return fig
