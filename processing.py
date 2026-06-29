@@ -477,11 +477,11 @@
 #     return df, fig
 
 ####################################################################################### TEST
-import os
-import tempfile
 import endaq
 import numpy as np
 import plotly.express as px
+import tempfile
+import os
 
 from plotting import create_result_plot
 
@@ -496,7 +496,7 @@ axis_dict = {"X": 0, "Y": 1, "Z": 2}
 
 
 # ============================================================
-# PREVIEW FUNCTION (UNCHANGED, SAFE)
+# PREVIEW SIGNAL (UNCHANGED)
 # ============================================================
 def preview_signal(ide_path, axis):
 
@@ -529,58 +529,22 @@ def preview_signal(ide_path, axis):
 
 
 # ============================================================
-# MAIN PROCESS FUNCTION (ROBUST VERSION)
+# MAIN PROCESS FUNCTION (FINAL CLEAN VERSION)
 # ============================================================
 def process_signal(ide_path, axis, start_time, end_time):
 
     axis_number = axis_dict[axis]
 
     # --------------------------------------------------------
-    # SAFE TYPE CONVERSION
+    # SAFETY: convert UI inputs (from plot selection)
     # --------------------------------------------------------
     start_time = float(start_time)
     end_time = float(end_time)
 
-    # --------------------------------------------------------
-    # TEMP FILE (Streamlit-safe)
-    # --------------------------------------------------------
-    temp_dir = tempfile.gettempdir()
-
-    extracted_ide_path = os.path.join(
-        temp_dir,
-        f"{os.path.splitext(os.path.basename(ide_path))[0]}_EXTRACTED.ide"
-    )
-
     # ============================================================
-    # SAFE EXTRACTION (WITH FALLBACK)
+    # LOAD FULL IDE FILE (NO extract_time)
     # ============================================================
-    use_extracted = True
-
-    try:
-        endaq.ide.extract_time(
-            ide_path,
-            extracted_ide_path,
-            start=start_time,
-            end=end_time
-        )
-
-    except Exception as e:
-        # fallback: avoid crashing Streamlit
-        print(f"[WARNING] extract_time failed: {e}")
-        use_extracted = False
-
-    # --------------------------------------------------------
-    # SELECT FILE TO LOAD
-    # --------------------------------------------------------
-    if use_extracted and os.path.exists(extracted_ide_path):
-        load_path = extracted_ide_path
-    else:
-        load_path = ide_path
-
-    # ============================================================
-    # LOAD DATA
-    # ============================================================
-    doc = endaq.ide.get_doc(load_path)
+    doc = endaq.ide.get_doc(ide_path)
 
     df_accel = endaq.ide.to_pandas(
         doc.channels[ACCEL_40G].subchannels[axis_number],
@@ -588,7 +552,7 @@ def process_signal(ide_path, axis, start_time, end_time):
     )
 
     if df_accel is None or len(df_accel) == 0:
-        raise ValueError("No acceleration data found.")
+        raise ValueError("No acceleration data found in IDE file.")
 
     # --------------------------------------------------------
     # UNIT CONVERSION
@@ -598,14 +562,24 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_accel.columns = ["acceleration"]
 
     # ============================================================
-    # IMPORTANT DESIGN DECISION
+    # IMPORTANT: UI-BASED SLICING (THIS FIXES YOUR WHOLE ISSUE)
     # ------------------------------------------------------------
-    # DO NOT FORCE TIME NORMALIZATION
-    # Let EnDAQ define time meaning
+    # start_time/end_time come from plot axis selection
+    # NOT from IDE global timestamps
     # ============================================================
+    df_accel = df_accel.loc[
+        (df_accel.index >= start_time) &
+        (df_accel.index <= end_time)
+    ]
+
+    if len(df_accel) == 0:
+        raise ValueError(
+            "No data in selected time window. "
+            "Check your selection range on the preview plot."
+        )
 
     # ============================================================
-    # INTEGRATION
+    # INTEGRATION (SAME AS YOUR LOCAL SCRIPT)
     # ============================================================
     integrals = endaq.calc.integrate.integrals(
         df_accel,
@@ -627,13 +601,13 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_displacement *= 1e3
 
     # ============================================================
-    # COMBINE
+    # COMBINE DATA
     # ============================================================
     df = df_accel.join(df_velocity, how="left")
     df = df.join(df_displacement, how="left")
 
     # ============================================================
-    # PLOT
+    # PLOT (same structure as your working script)
     # ============================================================
     fig = create_result_plot(df)
 
