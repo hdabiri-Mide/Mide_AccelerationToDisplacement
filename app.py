@@ -197,7 +197,7 @@ if st.session_state["ide_path"] is not None:
 
         export_df = df.copy()
         export_df.columns = [
-            "acceleration (m/s²)",
+            "acceleration (m/s2)",
             "velocity (mm/s)",
             "displacement (mm)"
         ]
