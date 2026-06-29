@@ -319,6 +319,46 @@ import numpy as np
 
 from plotting import create_result_plot
 
+# ============================================================
+# CONSTANTS
+# ============================================================
+ACCEL_40G = 80
+G_TO_M2S = 9.81
+
+axis_dict = {"X": 0, "Y": 1, "Z": 2}
+
+
+# ============================================================
+# PREVIEW FUNCTION
+# ============================================================
+def preview_signal(ide_path, axis):
+
+    axis_number = axis_dict[axis]
+
+    doc = endaq.ide.get_doc(ide_path)
+
+    df = endaq.ide.to_pandas(
+        doc.channels[ACCEL_40G].subchannels[axis_number],
+        time_mode="seconds",
+    ) * G_TO_M2S
+
+    df = df.copy()
+    df.columns = ["acceleration"]
+
+    fig = px.line(
+        df,
+        x=df.index,
+        y="acceleration",
+        labels={
+            "index": "Time [s]",
+            "acceleration": "Acceleration [m/s²]"
+        },
+        title="Raw Acceleration Signal"
+    )
+
+    fig.update_layout(hovermode="x unified")
+
+    return fig
 
 # ============================================================
 # MAIN PROCESS FUNCTION
