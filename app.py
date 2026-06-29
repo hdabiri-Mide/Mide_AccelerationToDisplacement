@@ -2,6 +2,7 @@
 import streamlit as st
 import tempfile
 import plotly.express as px
+import base64
 
 from processing import preview_signal, process_signal, create_result_plot
 
@@ -13,6 +14,35 @@ st.set_page_config(
     page_title="IDE Signal Converter",
     layout="wide"
 )
+
+# Adding logo
+
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+
+logo_base64 = get_base64_image("logo.jpg")  # put your jpg in project folder
+
+st.markdown(
+    f"""
+    <style>
+        .top-right-logo {{
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            z-index: 999;
+        }}
+    </style>
+
+    <div class="top-right-logo">
+        <img src="data:image/jpg;base64,{logo_base64}" width="120">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 st.title("IDE Signal Converter")
 
@@ -140,12 +170,6 @@ if st.session_state["ide_path"] is not None:
     # --------------------------------------------------------
     if st.button("Process Signal"):
 
-        # df = process_signal(
-        #     ide_path,
-        #     axis,
-        #     start_time,
-        #     end_time
-        # )
         df = process_signal(
             ide_path,
             axis,
