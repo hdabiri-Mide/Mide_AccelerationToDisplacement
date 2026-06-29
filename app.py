@@ -18,8 +18,8 @@ st.set_page_config(
 
 ##### Adding logo
 def get_base64_image(image_path):
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
+    with open(image_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 
 BASE_DIR = os.path.dirname(__file__)
@@ -28,25 +28,15 @@ logo_path = os.path.join(BASE_DIR, "enDAQLOGO.JPG")
 logo_base64 = get_base64_image(logo_path)
 
 
-st.markdown(
-    f"""
-    <div style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    ">
-        <h1 style="margin: 0;">IDE Signal Converter</h1>
-
-        <img src="data:image/jpg;base64,{logo_base64}"
-             width="120"
-             style="margin-right: 10px;">
-    </div>
-    """,
-    unsafe_allow_html=True
+st.set_page_config(
+    page_title="IDE Signal Converter",
+    layout="wide"
 )
 
+# LOGO (simple + stable)
+st.image("enDAQLOGO.jpg", width=140)
 
+# TITLE
 st.title("IDE Signal Converter")
 
 st.write(
