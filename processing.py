@@ -316,6 +316,7 @@ import os
 import tempfile
 import endaq
 import numpy as np
+import plotly.express as px
 
 from plotting import create_result_plot
 
