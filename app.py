@@ -34,7 +34,7 @@ st.set_page_config(
 )
 
 # LOGO (simple + stable)
-st.image("enDAQLOGO.jpg", width=140)
+st.image("enDAQLOGO.JPG", width=140)
 
 # TITLE
 st.title("IDE Signal Converter")
