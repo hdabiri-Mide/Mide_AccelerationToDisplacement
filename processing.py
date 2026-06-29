@@ -134,6 +134,12 @@ def process_signal(
 
     ) * G_TO_M2S
 
+    df_accel = df_accel.copy()
+    df_accel.columns = ['acceleration']
+
+    # ⭐ NORMALIZE TIME (IMPORTANT FIX)
+    df_accel.index = df_accel.index - df_accel.index.min()
+
     df_accel = df_accel[
             (df_accel.index >= start_time) &
             (df_accel.index <= end_time)
