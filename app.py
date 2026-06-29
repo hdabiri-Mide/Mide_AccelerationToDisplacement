@@ -183,7 +183,7 @@ if st.session_state["ide_path"] is not None:
 
         df = st.session_state["df"]
 
-        # st.subheader("Acceleration / Velocity / Displacement")
+        st.subheader("Acceleration / Velocity / Displacement")
 
         fig = create_result_plot(df)
 
