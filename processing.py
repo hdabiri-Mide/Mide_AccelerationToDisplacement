@@ -141,10 +141,8 @@
 
 import endaq
 import numpy as np
-import plotly.express as px
+import pandas as pd
 import streamlit as st
-
-from plotting import create_result_plot
 
 
 # ============================================================
@@ -157,9 +155,11 @@ axis_dict = {"X": 0, "Y": 1, "Z": 2}
 
 
 # ============================================================
-# PREVIEW SIGNAL
+# PREVIEW (UNCHANGED)
 # ============================================================
 def preview_signal(ide_path, axis):
+
+    import plotly.express as px
 
     axis_number = axis_dict[axis]
 
@@ -177,11 +177,8 @@ def preview_signal(ide_path, axis):
         df,
         x=df.index,
         y="acceleration",
-        labels={
-            "index": "Time [s]",
-            "acceleration": "Acceleration [m/s²]"
-        },
-        title="Raw Acceleration Signal"
+        title="Raw Acceleration Signal",
+        labels={"index": "Time [s]", "acceleration": "m/s²"}
     )
 
     fig.update_layout(hovermode="x unified")
@@ -190,57 +187,26 @@ def preview_signal(ide_path, axis):
 
 
 # ============================================================
-# MAIN PROCESS FUNCTION (CACHE-OPTIMIZED)
+# CORE COMPUTATION (CACHE EVERYTHING)
 # ============================================================
 @st.cache_data(show_spinner=False)
-def process_signal(ide_path, axis, start_time, end_time):
+def build_full_dataset(ide_path, axis):
 
     axis_number = axis_dict[axis]
 
-    # --------------------------------------------------------
-    # SAFETY CAST (from UI selection)
-    # --------------------------------------------------------
-    start_time = float(start_time)
-    end_time = float(end_time)
-
-    # ============================================================
-    # LOAD IDE FILE (NO extract_time = stable)
-    # ============================================================
     doc = endaq.ide.get_doc(ide_path)
 
     df_accel = endaq.ide.to_pandas(
         doc.channels[ACCEL_40G].subchannels[axis_number],
         time_mode="seconds",
-    )
+    ) * G_TO_M2S
 
-    if df_accel is None or len(df_accel) == 0:
-        raise ValueError("No acceleration data found in IDE file.")
-
-    # --------------------------------------------------------
-    # UNIT CONVERSION
-    # --------------------------------------------------------
-    df_accel = df_accel * G_TO_M2S
     df_accel = df_accel.copy()
     df_accel.columns = ["acceleration"]
 
-    # ============================================================
-    # UI-BASED SLICING (THIS IS YOUR CORE FIX)
-    # ------------------------------------------------------------
-    # start/end come from Plotly preview selection
-    # ============================================================
-    df_accel = df_accel.loc[
-        (df_accel.index >= start_time) &
-        (df_accel.index <= end_time)
-    ]
-
-    if len(df_accel) == 0:
-        raise ValueError(
-            "No data in selected window. Adjust selection range."
-        )
-
-    # ============================================================
-    # INTEGRATION (IDENTICAL TO YOUR LOCAL SCRIPT)
-    # ============================================================
+    # ========================================================
+    # INTEGRATION
+    # ========================================================
     integrals = endaq.calc.integrate.integrals(
         df_accel,
         n=2,
@@ -254,21 +220,22 @@ def process_signal(ide_path, axis, start_time, end_time):
     df_velocity.columns = ["velocity"]
     df_displacement.columns = ["displacement"]
 
-    # --------------------------------------------------------
-    # UNIT CONVERSION
-    # --------------------------------------------------------
     df_velocity *= 1e3
     df_displacement *= 1e3
 
-    # ============================================================
-    # FINAL COMBINATION
-    # ============================================================
+    # ========================================================
+    # FINAL DATASET
+    # ========================================================
     df = df_accel.join(df_velocity, how="left")
     df = df.join(df_displacement, how="left")
 
-    # ============================================================
-    # PLOT
-    # ============================================================
-    fig = create_result_plot(df)
+    return df
 
-    return df, fig
+
+# ============================================================
+# CSV EXPORT FUNCTION
+# ============================================================
+def get_csv(ide_path, axis):
+
+    df = build_full_dataset(ide_path, axis)
+    return df.to_csv(index=True).encode("utf-8")
